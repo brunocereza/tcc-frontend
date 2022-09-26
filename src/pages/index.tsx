@@ -73,7 +73,7 @@
 // export default Home
 import api from "../service/api/index";
 const Title = ({ children: any }: any) => {
-  return <h2>nome:</h2>;
+  return <h2>nome: aaa</h2>;
 };
 
 const Bruno = () => {
@@ -85,9 +85,14 @@ const Bruno = () => {
 };
 
 export const getServerSideProps = async () => {
-  const { data } = await api.get("/buscar");
+  const data = await api.get("/buscar ", {
+    params: {
+      nome: "Bruno",
+      idade: 23,
+    },
+  });
 
-  console.log(data);
+  console.log("data", data);
 
   return {
     props: {
