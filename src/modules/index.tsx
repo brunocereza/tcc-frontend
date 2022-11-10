@@ -3,14 +3,23 @@ import { Params } from "../types/ParamsShared";
 const ContextoCreate = createContext<Params>({
   nome: "",
   setNome: () => {},
+  abastecendo: false,
+  setAbastecendo: () => {},
+  rfid: "",
+  setRfid: () => {},
 });
 
 const ContextoProvider = ({ children }: any) => {
   const [nome, setNome] = useState("");
+  const [rfid, setRfid] = useState("");
+
+  const [abastecendo, setAbastecendo] = useState(false);
 
   return (
-    <ContextoCreate.Provider value={{ nome, setNome }}>
-      {children}{" "}
+    <ContextoCreate.Provider
+      value={{ nome, setNome, abastecendo, setAbastecendo, rfid, setRfid }}
+    >
+      {children}
     </ContextoCreate.Provider>
   );
 };

@@ -2,7 +2,7 @@ import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useContexto from "../modules/index";
 import mqtt, { IClientOptions, MqttClient } from "mqtt";
 import api from "../service/api";
@@ -12,14 +12,18 @@ import axios from "axios";
 import app from "next/app";
 export default function BasicCard() {
   const router = useRouter();
-  const { nome, setNome } = useContexto();
+  const { nome, setNome, setAbastecendo, setRfid } = useContexto();
+  const [alertaRfid, setAlertaRfid] = useState(false);
+  useEffect(() => {
+    setAbastecendo(false);
+  }, []);
   const connection = myMqtt.createConnect();
   // const res = myMqtt.hear(connection);
 
   connection.on("message", (topic, message) => {
     const messageReceive = String(message);
     const rfidReceive = String(message).split("").length == 10;
-
+    console.log("AEEO DIABO");
     if (rfidReceive) {
       verifyRfid(messageReceive);
     }
@@ -53,33 +57,40 @@ export default function BasicCard() {
   // }
 
   async function verifyRfid(rfid: string): Promise<void> {
-    console.log(rfid);
-    const response = await api.get("/verifyRfid", {
-      params: {
-        rfid,
-      },
-    });
-    if (response.status === 200) {
-      console.log("entrou no data");
-
-      setNome(response.data);
-      router.push("/abastecimento");
-    } else {
-      alert("RFID Não cadastrado!");
+    try {
+      const response = await api.get("/verifyRfid", {
+        params: {
+          rfid,
+        },
+      });
+      if (response.data) {
+        setNome(response.data);
+        setRfid(rfid);
+        router.push("/abastecimento");
+      }
+    } catch (error) {
+      setAlertaRfid(true);
+      setTimeout(function () {
+        setAlertaRfid(false);
+      }, 2500);
     }
   }
 
   return (
-    <Card>
-      <CardActions>
-        <Button
-          size="large"
-          style={{ fontSize: "40px" }}
-          onClick={() => verifyRfid("2711274267")}
-        >
-          Aproxime o cartão RFID do sensor!
-        </Button>
-      </CardActions>
-    </Card>
+    <>
+      <Card>
+        <CardActions>
+          <Button
+            size="large"
+            style={{ fontSize: "40px" }}
+            //2711274267
+          >
+            {alertaRfid
+              ? "RFID Não Encontrado"
+              : "Aproxime o cartão RFID do sensor!"}
+          </Button>
+        </CardActions>
+      </Card>
+    </>
   );
 }
