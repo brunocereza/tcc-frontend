@@ -21,11 +21,15 @@ const style = {
 
 const columns: GridColDef[] = [
   {
-    field: "quantidade",
-    headerName: "Quantidade Abastecida em Litros",
+    field: "quantidade_abastecida",
+    headerName: "Quantidade Abastecida em ML",
     width: 500,
   },
-  { field: "data", headerName: "Data do Abastecimento", width: 300 },
+  {
+    field: "data_abastecida",
+    headerName: "Data do Abastecimento",
+    width: 300,
+  },
 ];
 
 const ModalHistorico = ({
@@ -35,16 +39,20 @@ const ModalHistorico = ({
   open: boolean;
   onClose: Function;
 }) => {
-  const { nome } = useContexto();
+  const { nome, rfid } = useContexto();
   const [abastecimentos, setAbastecimentos] = useState([]);
-  console.log(abastecimentos);
   const totalAbastecido = abastecimentos.reduce(
-    (acc, item: { quantidade: number }) => acc + item.quantidade,
+    (acc, item: { quantidade_abastecida: number }) =>
+      acc + +item.quantidade_abastecida,
     0
   );
 
   const handleRequest = async () => {
-    const response = await api.get("/mockData");
+    const response = await api.get("/buscaHistorico", {
+      params: {
+        rfid,
+      },
+    });
 
     setAbastecimentos(response.data);
   };
@@ -65,7 +73,7 @@ const ModalHistorico = ({
             Histórico de Abastecimento de {nome}
           </Typography>
           <Typography id="modal-modal-title" variant="h5" component="h2">
-            Total Abastecido: {totalAbastecido}
+            Total Abastecido: {totalAbastecido} ML
           </Typography>
         </ContainerModal>
 

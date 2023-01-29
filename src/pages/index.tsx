@@ -12,24 +12,33 @@ import axios from "axios";
 import app from "next/app";
 export default function BasicCard() {
   const router = useRouter();
-  const { nome, setNome, setAbastecendo, setRfid } = useContexto();
+  const {
+    nome,
+    setNome,
+    setAbastecendo,
+    setRfid,
+    mqttConnection,
+    setValorSensor,
+  } = useContexto();
   const [alertaRfid, setAlertaRfid] = useState(false);
   useEffect(() => {
     setAbastecendo(false);
   }, []);
-  const connection = myMqtt.createConnect();
+  // const connection = myMqtt.createConnect();
   // const res = myMqtt.hear(connection);
 
-  connection.on("message", (topic, message) => {
+  mqttConnection.on("message", (topic, message) => {
     const messageReceive = String(message);
     const rfidReceive = String(message).split("").length == 10;
-    console.log("AEEO DIABO");
+
     if (rfidReceive) {
       verifyRfid(messageReceive);
+    } else {
+      setValorSensor(+messageReceive);
     }
   });
-  connection.on("connect", () => {
-    connection.subscribe("TCCBrunoTRR_hardware_escreve");
+  mqttConnection.on("connect", () => {
+    mqttConnection.subscribe("TCCBrunoTRR_hardware_escreve");
   });
 
   // const cone = Promise.resolve(connection);
@@ -64,7 +73,7 @@ export default function BasicCard() {
         },
       });
       if (response.data) {
-        setNome(response.data);
+        setNome(response.data.nome);
         setRfid(rfid);
         router.push("/abastecimento");
       }
@@ -83,6 +92,7 @@ export default function BasicCard() {
           <Button
             size="large"
             style={{ fontSize: "40px" }}
+            onClick={() => verifyRfid("2711274267")}
             //2711274267
           >
             {alertaRfid
